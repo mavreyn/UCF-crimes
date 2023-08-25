@@ -17,8 +17,6 @@ import dateparser
 from embeddings import *
 import json
 
-with open('title_embeddings.json', 'r') as f:
-    embeddings_dict = json.load(f)
 
 
 def to_pydt(s):
@@ -26,6 +24,9 @@ def to_pydt(s):
 
 
 def main():
+    with open('title_embeddings.json', 'r') as f:
+        embeddings_dict = json.load(f)
+
     st.set_page_config(layout='wide')
 
     # Main information about the app on the page
@@ -49,10 +50,12 @@ def main():
 
     # Date search
     st.sidebar.subheader('Filter by date 📅')
-    start_date = st.sidebar.date_input('Start date', value=datetime(2023, 1, 27))
-    start_date = pd.Timestamp(start_date)
-    end_date = st.sidebar.date_input('End date', value=datetime(2023, 8, 1))
-    end_date = pd.Timestamp(end_date)
+    filter_dates = st.sidebar.checkbox('Enable date filter')
+    if filter_dates:
+        start_date = st.sidebar.date_input('Start date', value=datetime(2023, 1, 27))
+        start_date = pd.Timestamp(start_date)
+        end_date = st.sidebar.date_input('End date', value=datetime(2023, 8, 1))
+        end_date = pd.Timestamp(end_date)
 
     # Apply filters
     df = pd.read_csv('UCFCrimes_Database_8-13.csv', index_col=0)
@@ -60,10 +63,11 @@ def main():
         df = search_incident_titles(df, title_query, embeddings_dict, st.secrets['openai_api_key'], n=nresults)
     if location != 'ALL':
         df = df[df['campus'] == location]
-    if start_date > end_date:
-        st.sidebar.error('End date must be after start date')
-    else:
-        df = df[(df['report_dt'].apply(to_pydt) >= start_date) & (df['report_dt'].apply(to_pydt) <= end_date)]
+    if filter_dates:
+        if start_date > end_date:
+            st.sidebar.error('End date must be after start date')
+        else:
+            df = df[(df['report_dt'].apply(to_pydt) >= start_date) & (df['report_dt'].apply(to_pydt) <= end_date)]
 
     # Show Dataframe
     st.subheader('Filtered Dataframe')
