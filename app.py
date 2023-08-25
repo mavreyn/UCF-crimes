@@ -81,6 +81,7 @@ def main():
         st.bar_chart(hist_values)
 
     with col2:
+        st.write(len(df))
         st.map(df.rename(columns={'lng': 'lon'})[['lat', 'lon']])
     
     st.markdown('---')
@@ -89,7 +90,7 @@ def main():
     st.subheader('Make a Query')
     query = st.text_input('Use PandasAI to ask a question about the data')
     if query:
-        llm = OpenAI()
+        llm = OpenAI(api_token=st.secrets['openai_api_key'])
         pdai = PandasAI(llm, conversational=True, verbose=True)
         response = pdai(df, query)
         st.write(response)
