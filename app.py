@@ -81,7 +81,6 @@ def main():
         st.bar_chart(hist_values)
 
     with col2:
-        st.write(len(df))
         st.map(df.rename(columns={'lng': 'lon'})[['lat', 'lon']])
     
     st.markdown('---')
